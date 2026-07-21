@@ -48,7 +48,7 @@ app.post('/api/ai/:feature', async (req, res) => {
     if (!prompt) return res.status(400).json({ error: 'Unknown AI feature.' })
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     const response = await client.responses.create({
-      model: process.env.OPENAI_MODEL || 'gpt-5.4-mini',
+      model: process.env.OPENAI_MODEL || 'gpt-5.6',
       input: prompt,
       text: { format: { type: 'json_object' } }
     })
