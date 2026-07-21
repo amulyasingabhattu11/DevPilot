@@ -2,6 +2,8 @@
 
 > Built for the **OpenAI Build Week Hackathon** · Track: **Developer Tools**
 
+> **Submission readiness:** DevPilot is a browser-based developer tool built with Codex and powered by GPT-5.6. Add the deployed Render URL, public demo-video URL, and primary Codex `/feedback` Session ID in the submission checklist below before submitting to Devpost.
+
 DevPilot is an AI-powered engineering workspace that helps developers understand, review, test, and extend any codebase — in seconds. Paste a GitHub repo URL, and DevPilot instantly lets you analyze architecture, get a code review, generate tests, write docs, plan features, and forecast maintainability risk — all from a clean, single-page interface.
 
 ---
@@ -20,9 +22,21 @@ DevPilot is an AI-powered engineering workspace that helps developers understand
 
 ---
 
-## Demo
+## Live Demo
 
-> Video: [YouTube link — coming soon]
+Deploy the included `render.yaml` to Render, then add the resulting URL here:
+
+- **App:** `https://<your-render-service>.onrender.com`
+- **Demo video:** `<public YouTube URL — maximum 3 minutes>`
+
+### How judges can test it
+
+1. Open the deployed app URL in a modern desktop browser.
+2. Import a public GitHub repository using `owner/repository` or a full GitHub URL.
+3. Select any DevPilot tool from the sidebar and run an analysis.
+4. Optionally paste a new file into the workspace; it is added to the local browser workspace and included in subsequent analysis without changing GitHub.
+
+If a hosted demo is unavailable, follow the local setup instructions below. No account, database, or local project files are required to evaluate the core workflow.
 
 ---
 
@@ -41,6 +55,7 @@ DevPilot is an AI-powered engineering workspace that helps developers understand
 
 - Node.js 18+
 - An OpenAI API key with access to GPT-5.6
+- A modern browser: Chrome, Edge, Firefox, or Safari
 
 ### Installation
 
@@ -78,6 +93,17 @@ npm run dev
 This starts both the Express API server (`localhost:3001`) and the Vite dev server (`localhost:5173`) concurrently.
 
 Open your browser at `http://localhost:5173`.
+
+### Deploy on Render
+
+This repository includes `render.yaml` for a single free Render web service. It builds the React client, serves it from Express, and keeps the OpenAI key on the server.
+
+1. Push this repository to GitHub without committing `.env`.
+2. In Render, choose **New → Blueprint** and select the repository.
+3. Enter `OPENAI_API_KEY` when prompted. Optionally set `GITHUB_TOKEN` to reduce GitHub import rate-limit failures.
+4. Deploy and use the generated `onrender.com` URL as the live-demo link above.
+
+The free Render service may sleep after inactivity; its first request can take longer while it starts.
 
 ---
 
@@ -151,6 +177,26 @@ This project was built during OpenAI Build Week with Codex as the primary develo
 JS, JSX, TS, TSX, MJS, CJS, Python, JSON, Markdown, CSS, HTML, YAML/YML
 
 Automatically excludes: `node_modules`, `dist`, `build`, `coverage`, `vendor`
+
+---
+
+## Supported Platforms
+
+DevPilot is a responsive web application tested for modern desktop browsers: Chrome, Microsoft Edge, Firefox, and Safari. It requires an internet connection to import public GitHub repositories and call the OpenAI API. There is no native desktop or mobile application, database, authentication flow, or browser extension to install.
+
+---
+
+## Hackathon Submission Checklist
+
+- [x] Working project built with Codex and using GPT-5.6.
+- [x] **Developer Tools** track selected: DevPilot helps engineers understand, review, test, document, and plan changes to codebases.
+- [x] Clear local setup, deployment, and judge-testing instructions.
+- [x] Supported-platform guidance.
+- [x] Explanation of where Codex and GPT-5.6 contributed to the build.
+- [ ] Add the public Render demo URL to **Live Demo**.
+- [ ] Add a public YouTube demo video under three minutes. Its voiceover should explain both the project and how Codex and GPT-5.6 were used.
+- [ ] Add the code repository URL to the Devpost submission. If private, share access with `testing@devpost.com` and `build-week-event@openai.com`.
+- [ ] Retrieve the primary Codex `/feedback` Session ID and add it to the Devpost submission form.
 
 ---
 
