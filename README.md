@@ -26,8 +26,7 @@ DevPilot is an AI-powered engineering workspace that helps developers understand
 
 Deploy the included `render.yaml` to Render, then add the resulting URL here:
 
-- **App:** `https://<your-render-service>.onrender.com`
-- **Demo video:** `<public YouTube URL — maximum 3 minutes>`
+- **App:** `https://devpilot-75lc.onrender.com/`
 
 ### How judges can test it
 
@@ -186,26 +185,8 @@ DevPilot is a responsive web application tested for modern desktop browsers: Chr
 
 ---
 
-## Hackathon Submission Checklist
-
-- [x] Working project built with Codex and using GPT-5.6.
-- [x] **Developer Tools** track selected: DevPilot helps engineers understand, review, test, document, and plan changes to codebases.
-- [x] Clear local setup, deployment, and judge-testing instructions.
-- [x] Supported-platform guidance.
-- [x] Explanation of where Codex and GPT-5.6 contributed to the build.
-- [ ] Add the public Render demo URL to **Live Demo**.
-- [ ] Add a public YouTube demo video under three minutes. Its voiceover should explain both the project and how Codex and GPT-5.6 were used.
-- [ ] Add the code repository URL to the Devpost submission. If private, share access with `testing@devpost.com` and `build-week-event@openai.com`.
-- [ ] Retrieve the primary Codex `/feedback` Session ID and add it to the Devpost submission form.
-
----
 
 ## Hackathon Track
 
 **Developer Tools** — DevPilot targets developers who need to onboard to an unfamiliar codebase quickly, get an objective code review without waiting for a teammate, or plan a feature without reading every file manually.
 
----
-
-## License
-
-MIT
