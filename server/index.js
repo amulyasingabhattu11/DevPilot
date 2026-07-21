@@ -6,13 +6,22 @@ import { buildPrompt } from './prompts.js'
 
 const app = express()
 app.use(cors())
-app.use(express.json({ limit: '1mb' }))
+app.use(express.json({ limit: '12mb' }))
 const port = Number(process.env.PORT || 3001)
 const maxFiles = Number(process.env.IMPORT_MAX_FILES || 40)
-const maxFileBytes = Number(process.env.IMPORT_MAX_FILE_BYTES || 50000)
+const maxFileBytes = Number(process.env.IMPORT_MAX_FILE_BYTES || 250000)
 const rateWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000)
 const maxRequests = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 12)
 const requestCounts = new Map()
+const githubHeaders = {
+  Accept: 'application/vnd.github+json',
+  'User-Agent': 'DevPilot-MVP',
+  ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {})
+}
+const githubFetch = async (url) => {
+  try { return await fetch(url, { headers: githubHeaders, signal: AbortSignal.timeout(20_000) }) }
+  catch (error) { throw new Error('Could not reach GitHub. Check your internet connection, then retry. Add GITHUB_TOKEN to .env if GitHub is rate-limiting this server.') }
+}
 
 app.get('/api/health', (_, res) => res.json({ configured: Boolean(process.env.OPENAI_API_KEY), model: process.env.OPENAI_MODEL || 'gpt-5.6' }))
 app.use('/api/ai', (req, res, next) => {
@@ -34,7 +43,7 @@ app.post('/api/repository/import', async (req, res) => {
   if (!match) return res.status(400).json({ error: 'Use a public GitHub URL or shorthand, such as owner/repository.' })
   const [, owner, repo, requestedBranch] = match
   try {
-    const metadataResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'DevPilot-MVP' } })
+    const metadataResponse = await githubFetch(`https://api.github.com/repos/${owner}/${repo}`)
     if (!metadataResponse.ok) {
       if (metadataResponse.status === 404) throw new Error('Repository not found or it is private. DevPilot supports public repositories only.')
       if (metadataResponse.status === 403) throw new Error('GitHub rate limit reached. Try again later or add a GitHub token to the server.')
@@ -42,7 +51,7 @@ app.post('/api/repository/import', async (req, res) => {
     }
     const metadata = await metadataResponse.json()
     const branch = requestedBranch || metadata.default_branch
-    const treeResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'DevPilot-MVP' } })
+    const treeResponse = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${encodeURIComponent(branch)}?recursive=1`)
     if (!treeResponse.ok) throw new Error(treeResponse.status === 403 ? 'GitHub rate limit reached while reading the file tree.' : 'GitHub could not read the repository file tree.')
     const tree = await treeResponse.json()
     const allowed = /\.(js|jsx|ts|tsx|mjs|cjs|py|json|md|css|html|yml|yaml)$/i
@@ -50,12 +59,17 @@ app.post('/api/repository/import', async (req, res) => {
     const sizeEligible = sourceFiles.filter(item => item.size <= maxFileBytes)
     const candidates = sizeEligible.slice(0, maxFiles)
     if (!candidates.length) throw new Error('No supported source files were found. DevPilot supports JS/TS, Python, Markdown, JSON, CSS, HTML, and YAML.')
-    const loaded = await Promise.all(candidates.map(async item => {
-      const fileResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${item.path}?ref=${encodeURIComponent(branch)}`, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'DevPilot-MVP' } })
-      if (!fileResponse.ok) return null
-      const file = await fileResponse.json()
-      return file.encoding === 'base64' ? { path: item.path, content: Buffer.from(file.content.replace(/\n/g, ''), 'base64').toString('utf8') } : null
-    }))
+    const loaded = []
+    for (let index = 0; index < candidates.length; index += 6) {
+      const batch = candidates.slice(index, index + 6)
+      const batchResults = await Promise.all(batch.map(async item => {
+        const fileResponse = await githubFetch(`https://api.github.com/repos/${owner}/${repo}/contents/${item.path}?ref=${encodeURIComponent(branch)}`)
+        if (!fileResponse.ok) return null
+        const file = await fileResponse.json()
+        return file.encoding === 'base64' ? { path: item.path, content: Buffer.from(file.content.replace(/\n/g, ''), 'base64').toString('utf8') } : null
+      }))
+      loaded.push(...batchResults)
+    }
     const files = loaded.filter(Boolean)
     if (!files.length) throw new Error('GitHub returned no readable source files.')
     res.json({
