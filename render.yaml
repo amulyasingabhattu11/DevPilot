@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: devpilot
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5.6
+      - key: IMPORT_MAX_FILES
+        value: "40"
+      - key: IMPORT_MAX_FILE_BYTES
+        value: "250000"
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: "12"

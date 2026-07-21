@@ -17,7 +17,7 @@ const textOf = data => typeof data === 'string' ? data : JSON.stringify(data, nu
 function download(name, text) { const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([text], { type: 'text/markdown;charset=utf-8' })), download: name }); link.click(); URL.revokeObjectURL(link.href) }
 
 function App() {
- const api = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+ const api = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001/api' : '/api')
  const saved = useMemo(loadWorkspace, [])
  const [section,setSection]=useState('repository'), [files,setFiles]=useState(saved.files), [selected,setSelected]=useState(saved.selected), [result,setResult]=useState(null), [loading,setLoading]=useState(false), [error,setError]=useState(''), [request,setRequest]=useState('Add dark mode with a saved user preference.'), [pasteName,setPasteName]=useState('new-file.js'), [pasteCode,setPasteCode]=useState(''), [repoUrl,setRepoUrl]=useState(''), [repoName,setRepoName]=useState(saved.repoName), [apiStatus,setApiStatus]=useState('Checking backend…'), [history,setHistory]=useState(saved.history), [importInfo,setImportInfo]=useState(saved.importInfo), [fileQuery,setFileQuery]=useState('')
  const selectedFile=useMemo(()=>files.find(f=>f.path===selected) || files[0],[files,selected])

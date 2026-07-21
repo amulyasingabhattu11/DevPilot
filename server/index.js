@@ -2,9 +2,14 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import OpenAI from 'openai'
+import { existsSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { buildPrompt } from './prompts.js'
 
 const app = express()
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const clientDist = path.join(projectRoot, 'dist')
 app.use(cors())
 app.use(express.json({ limit: '12mb' }))
 const port = Number(process.env.PORT || 3001)
@@ -110,4 +115,10 @@ app.post('/api/ai/:feature', async (req, res) => {
     res.status(500).json({ error: error instanceof SyntaxError ? 'The model returned invalid JSON. Try again.' : error.message || 'AI request failed.' })
   }
 })
+
+// In production, Render serves the compiled React app and API from one origin.
+if (existsSync(clientDist)) {
+  app.use(express.static(clientDist))
+  app.get('*', (_, res) => res.sendFile(path.join(clientDist, 'index.html')))
+}
 app.listen(port, () => console.log(`DevPilot API: http://localhost:${port}`))
